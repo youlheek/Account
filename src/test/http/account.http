@@ -1,0 +1,12 @@
+### GET request to example server
+GET https://examples.http-client.intellij.net/get
+    ?generated-in=IntelliJ IDEA
+
+### create account
+POST http://localhost:8080/account
+Content-Type: application/json
+
+{
+"userId":1,
+"initialBalance": 10000
+}
