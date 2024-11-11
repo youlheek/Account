@@ -40,6 +40,8 @@ public class AccountService {
                 = accountUserRepository.findById(userId)
                 .orElseThrow(() -> new AccountException(ErrorCode.USER_NOT_FOUND));
 
+        validateCreateAccount(accountUser);
+
         // 가장 최근 계좌번호를 가져와서 그것보다 +1 인 숫자를 넣어줄 것임
         String newAccountNumber = accountRepository.findFirstByOrderByIdDesc()
                 .map(account -> (Integer.parseInt(account.getAccountNumber())) + 1 + "")
@@ -58,6 +60,13 @@ public class AccountService {
         return AccountDto.fromEntity(account);
         // 사실 account 같은 일회성 변수는
         // 생성하지 않고 걍 fromEntity() 안에 넣어주는 것을 선호하심 (강사님 선호)
+    }
+
+    // Exception 발생시키는 부분은 계속 더 추가될 수 있으니 따로 메서드로 뺀다!
+    private void validateCreateAccount(AccountUser accountUser) {
+        if(accountRepository.countByAccountUser(accountUser) == 10) {
+            throw new AccountException(ErrorCode.USER_MAX_COUNT_PER_USER_10);
+        }
     }
 
     @Transactional

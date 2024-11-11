@@ -132,4 +132,25 @@ class AccountServiceTest {
         assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
     }
 
+    @Test
+    @DisplayName("계좌가 10개 - 계좌 생성 실패")
+    void createAccount_maxAccountIs10 () {
+        //given
+        AccountUser user
+                = AccountUser.builder()
+                .id(15L)
+                .name("Pobi").build();
+        given(accountUserRepository.findById(anyLong()))
+                .willReturn(Optional.of(user));
+        given(accountRepository.countByAccountUser(user))
+                .willReturn(10);
+
+        //when
+        AccountException exception
+                = assertThrows(AccountException.class,
+                () -> accountService.createAccount(1L, 1000L));
+
+        //then
+        assertEquals(ErrorCode.USER_MAX_COUNT_PER_USER_10, exception.getErrorCode());
+    }
 }
