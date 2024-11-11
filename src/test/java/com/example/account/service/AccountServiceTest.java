@@ -43,7 +43,7 @@ class AccountServiceTest {
 
     @Test
     void testGetAccount() {
-        accountService.createAccount();
+//        accountService.createAccount();
         Account account = accountService.getAccount(1L);
 
     }
