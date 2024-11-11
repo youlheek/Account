@@ -23,7 +23,6 @@ public class AccountService {
 
     //    @Autowired @Inject : 예전에는 이 어노테이션을 사용했었음
     private final AccountRepository accountRepository;
-
     private final AccountUserRepository accountUserRepository;
 
     /**
