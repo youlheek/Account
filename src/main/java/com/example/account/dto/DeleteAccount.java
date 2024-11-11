@@ -1,13 +1,14 @@
 package com.example.account.dto;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
-public class CreateAccount {
+public class DeleteAccount {
 
     @Getter
     @Setter
@@ -17,9 +18,9 @@ public class CreateAccount {
         @Min(1)
         private Long userId;
 
-        @NotNull
-        @Min(0)
-        private Long initialBalance;
+        @NotBlank
+        @Size(min = 10, max = 10) // 10자리
+        private String accountNumber;
     }
 
     @Getter
@@ -30,14 +31,14 @@ public class CreateAccount {
     public static class Response {
         private Long userId;
         private String accountNumber;
-        private LocalDateTime registeredAt;
+        private LocalDateTime unRegisteredAt;
 
         // AccountDto를 CreateAccount.Response 객체로 변환해줌
         public static Response from(AccountDto accountDto) {
             return Response.builder()
                     .userId(accountDto.getUserId())
                     .accountNumber(accountDto.getAccountNumber())
-                    .registeredAt(accountDto.getRegisteredAt())
+                    .unRegisteredAt(accountDto.getUnregisteredAt())
                     .build();
         }
     }
