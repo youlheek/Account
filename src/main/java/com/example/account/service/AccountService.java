@@ -95,6 +95,9 @@ public class AccountService {
         account.setAccountStatus(UNREGISTERED);
         account.setUnregistedAt(LocalDateTime.now());
 
+        accountRepository.save(account);
+        // 필요 없는 코드이지만 Test에서 save(captor.capture())을 사용하기 위해서 씀
+
         return AccountDto.fromEntity(account);
     }
 
