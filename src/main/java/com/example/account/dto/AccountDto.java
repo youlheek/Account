@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
 @Builder
-public class AccountDto {
+public class AccountDto { // Account라는 Entity의 유사 객체
+    // Controller <-> Service 간의 데이터를 주고 받는데 최적화된 DTO
 
     private Long userId;
     private String accountNumber;
@@ -23,6 +24,7 @@ public class AccountDto {
         return AccountDto.builder()
                 .userId(account.getAccountUser().getId())
                 .accountNumber(account.getAccountNumber())
+                .balance(account.getBalance())
                 .registeredAt(account.getRegisteredAt())
                 .unregisteredAt(account.getUnregistedAt())
                 .build();

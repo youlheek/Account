@@ -17,8 +17,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.account.type.AccountStatus.*;
+import static com.example.account.type.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor // 꼭 필요한 argument가 들어간 생성자를 생성해줌 ex)Final 같은거
@@ -39,7 +42,7 @@ public class AccountService {
 
         AccountUser accountUser
                 = accountUserRepository.findById(userId)
-                .orElseThrow(() -> new AccountException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
 
         validateCreateAccount(accountUser);
 
@@ -66,7 +69,7 @@ public class AccountService {
     // Exception 발생시키는 부분은 계속 더 추가될 수 있으니 따로 메서드로 뺀다!
     private void validateCreateAccount(AccountUser accountUser) {
         if (accountRepository.countByAccountUser(accountUser) == 10) {
-            throw new AccountException(ErrorCode.USER_MAX_COUNT_PER_USER_10);
+            throw new AccountException(USER_MAX_COUNT_PER_USER_10);
         }
     }
 
@@ -85,10 +88,10 @@ public class AccountService {
 
         AccountUser accountUser
                 = accountUserRepository.findById(userId)
-                .orElseThrow(() -> new AccountException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
         Account account
                 = accountRepository.findByAccountNumber(accountNumber)
-                .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
+                .orElseThrow(() -> new AccountException(ACCOUNT_NOT_FOUND));
 
         validateDeleteAccount(accountUser, account);
 
@@ -103,13 +106,27 @@ public class AccountService {
 
     private void validateDeleteAccount(AccountUser accountUser, Account account) {
         if (accountUser.getId() != account.getAccountUser().getId()) {
-            throw new AccountException(ErrorCode.USER_ACCOUNT_UN_MATCH);
+            throw new AccountException(USER_ACCOUNT_UN_MATCH);
         }
         if (account.getAccountStatus() == UNREGISTERED) {
-            throw new AccountException(ErrorCode.ACCOUNT_ALREADY_UNREGISTERED);
+            throw new AccountException(ACCOUNT_ALREADY_UNREGISTERED);
         }
         if (account.getBalance() > 0) {
-            throw new AccountException(ErrorCode.BALANCE_NOT_EMPTY);
+            throw new AccountException(BALANCE_NOT_EMPTY);
         }
+    }
+
+    @Transactional // 이게 없으면 레이지로딩이 안되어서 제대로 로드가 안됨
+    public List<AccountDto> getAccountByUserId(Long userId) {
+        AccountUser accountUser
+                = accountUserRepository.findById(userId)
+                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+
+        List<Account> accounts = accountRepository.findByAccountUser(accountUser);
+
+        return accounts.stream()
+                .map(AccountDto::fromEntity)
+                // 위 코드 대신 .map(account -> AccountDto.fromEntity(account)) 도 가능
+                .collect(Collectors.toList());
     }
 }

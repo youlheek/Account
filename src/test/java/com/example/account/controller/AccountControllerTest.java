@@ -64,6 +64,12 @@ class AccountControllerTest {
     }
 
     @Test
+    void successGetAccountsByUserId() throws Exception {
+        //given
+        // 📍
+    }
+
+    @Test
     void successGetAccount() throws Exception {
         //given
         given(accountService.getAccount(anyLong()))
