@@ -124,6 +124,7 @@ public class AccountService {
 
         List<Account> accounts = accountRepository.findByAccountUser(accountUser);
 
+        // 📍 stream을 왜 생성하는건지 모르겠다
         return accounts.stream()
                 .map(AccountDto::fromEntity)
                 // 위 코드 대신 .map(account -> AccountDto.fromEntity(account)) 도 가능

@@ -1,6 +1,8 @@
 package com.example.account.domain;
 
+import com.example.account.exception.AccountException;
 import com.example.account.type.AccountStatus;
+import com.example.account.type.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -43,5 +45,11 @@ public class Account { // 이 클래스의 멤버변수처럼 보이는 것들�
     private LocalDateTime updatedAt;
 
 
+    public void useBalance(Long amount) {
+        if(amount > balance) {
+            throw new AccountException(ErrorCode.AMOUNT_EXCEED_BALANCE);
+        }
 
+        balance -= amount;
+    }
 }
