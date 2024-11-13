@@ -52,4 +52,12 @@ public class Account { // 이 클래스의 멤버변수처럼 보이는 것들�
 
         balance -= amount;
     }
+
+    public void cancelBalance(Long amount) {
+        if(amount < 0) {
+            throw new AccountException(ErrorCode.INVALID_REQUEST);
+        }
+
+        balance += amount;
+    }
 }

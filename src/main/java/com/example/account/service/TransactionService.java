@@ -13,16 +13,14 @@ import com.example.account.type.ErrorCode;
 import com.example.account.type.TransactionResultType;
 import com.example.account.type.TransactionType;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -56,7 +54,7 @@ public class TransactionService {
         // 거래금액 사용
         account.useBalance(amount);
 
-        return TransactionDto.fromEntity(saveAndGetTransaction(TransactionResultType.S, amount, account));
+        return TransactionDto.fromEntity(saveAndGetTransaction(TransactionResultType.S, TransactionType.USE, amount, account));
     }
 
     private void validateUseBalance(AccountUser user, Account account, Long amount) {
@@ -81,15 +79,17 @@ public class TransactionService {
                 accountRepository.findByAccountNumber(accountNumber)
                         .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
 
-        saveAndGetTransaction(TransactionResultType.F, amount, account);
+        saveAndGetTransaction(TransactionResultType.F, TransactionType.USE, amount, account);
     }
 
     private Transaction saveAndGetTransaction(
-            TransactionResultType transactionResultType, Long amount, Account account) {
+            TransactionResultType transactionResultType,
+            TransactionType transactionType,
+            Long amount, Account account) {
 
         return transactionRepository.save(
                 Transaction.builder()
-                        .transactionType(TransactionType.USE)
+                        .transactionType(transactionType)
                         .transactionResultType(transactionResultType)
                         .account(account)
                         .amount(amount)
@@ -97,5 +97,64 @@ public class TransactionService {
                         .transactionId(UUID.randomUUID().toString().replace("-", ""))
                         .transactedAt(LocalDateTime.now())
                         .build());
+    }
+
+
+
+/*
+    정책 : 1. 거래 아이디에 해당하는 거래가 없는 경우
+         2. 계좌가 없는 경우, 거래와 계좌가 일치하지 않는 경우
+         3. 거래금액과 거래 취소 금액이 다른경우(부분 취소 불가능)
+         ➡️ 실패 응답
+        - 1년이 넘은 거래는 사용 취소 불가능
+        - 해당 계좌에서 거래(사용, 사용 취소)가 진행 중일 때
+        다른 거래 요청이 오는 경우 해당 거래가 동시에 잘못 처리되는 것을 방지해야 한다.
+    */
+    @Transactional
+    public TransactionDto cancelBalance(
+            String transactionId, String accountNumber, Long amount) {
+
+        Transaction transaction =
+                transactionRepository.findByTransactionId(transactionId)
+                        .orElseThrow(() -> new AccountException(ErrorCode.TRANSACTION_NOT_FOUND));
+
+        Account account =
+                accountRepository.findByAccountNumber(accountNumber)
+                        .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
+
+        validateCancleBalance(transaction, account, amount);
+
+        account.cancelBalance(amount);
+
+        return TransactionDto.fromEntity(saveAndGetTransaction(TransactionResultType.S, TransactionType.USE, amount, account));
+    }
+
+    private void validateCancleBalance(Transaction transaction, Account account, Long amount) {
+
+        // 2. 거래와 계좌가 일치하지 않는 경우
+        if (!Objects.equals(transaction.getAccount().getId(), account.getId())) {
+            throw new AccountException(ErrorCode.TRANSACTION_ACCOUNT_UN_MATCH);
+        }
+
+        // 3. 거래금액과 거래 취소 금액이 다른경우(부분 취소 불가능)
+        if (!Objects.equals(transaction.getAmount(), amount)) {
+            throw new AccountException(ErrorCode.CANCEL_MUST_FULLY);
+        }
+
+        // - 1년이 넘은 거래는 사용 취소 불가능
+        if (transaction.getTransactedAt().isBefore(LocalDateTime.now().minusYears(1))) {
+            throw new AccountException(ErrorCode.TOO_OLD_ORDER_TO_CANCEL);
+        }
+    }
+
+    @Transactional
+    public void saveFailedCancelTransaction(
+            String accountNumber, Long amount) {
+
+        Account account =
+                accountRepository.findByAccountNumber(accountNumber)
+                                .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
+
+        saveAndGetTransaction(TransactionResultType.F, TransactionType.CANCLE, amount, account);
     }
 }
