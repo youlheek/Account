@@ -9,7 +9,7 @@ Content-Type: application/json
 
 {
 "userId":1,
-"initialBalance": 1234569790
+"initialBalance": 1000000000
 }
 
 ### delete account
@@ -17,6 +17,6 @@ DELETE http://localhost:8080/account
 Content-Type: application/json
 
 {
-  "userId":2,
+  "userId":1,
   "accountNumber": "1000000003"
 }

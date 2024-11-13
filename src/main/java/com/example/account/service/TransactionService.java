@@ -100,7 +100,6 @@ public class TransactionService {
     }
 
 
-
 /*
     정책 : 1. 거래 아이디에 해당하는 거래가 없는 경우
          2. 계좌가 없는 경우, 거래와 계좌가 일치하지 않는 경우
@@ -126,7 +125,7 @@ public class TransactionService {
 
         account.cancelBalance(amount);
 
-        return TransactionDto.fromEntity(saveAndGetTransaction(TransactionResultType.S, TransactionType.USE, amount, account));
+        return TransactionDto.fromEntity(saveAndGetTransaction(TransactionResultType.S, TransactionType.CANCLE, amount, account));
     }
 
     private void validateCancleBalance(Transaction transaction, Account account, Long amount) {
@@ -156,5 +155,20 @@ public class TransactionService {
                                 .orElseThrow(() -> new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
 
         saveAndGetTransaction(TransactionResultType.F, TransactionType.CANCLE, amount, account);
+    }
+
+
+/*
+    해당 거래 아이디의 거래가 없는 경우
+	➡️ 실패 응답
+*/
+    @Transactional
+    public TransactionDto queryTransaction(String transactionId) {
+
+        Transaction transaction =
+                transactionRepository.findByTransactionId(transactionId)
+                .orElseThrow(() -> new AccountException(ErrorCode.TRANSACTION_NOT_FOUND));
+
+        return TransactionDto.fromEntity(transaction);
     }
 }
