@@ -27,7 +27,7 @@ public class LockService {
             boolean isLock = lock.tryLock(1, 15, TimeUnit.SECONDS);
             // (최대 1주동안 락을 기다려서 획득하기, 획득한 락을 15초동안 갖고있다 풀어주기, 시간 단위)
 
-            if(isLock) {
+            if(!isLock) {
                 log.error("=================Lock acquisition failed=================");
                 throw new AccountException(ErrorCode.ACCOUNT_TRANSACTION_LOCK);
             }
