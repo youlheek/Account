@@ -1,5 +1,6 @@
 package com.example.account.controller;
 
+import com.example.account.aop.AccountLock;
 import com.example.account.dto.CancelBalance;
 import com.example.account.dto.QueryTransactionResponse;
 import com.example.account.dto.TransactionDto;
@@ -25,14 +26,19 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping("/transaction/use")
+    @AccountLock
     public UseBalance.Response useBalance(
-            @Valid @RequestBody UseBalance.Request request) {
+            @Valid @RequestBody UseBalance.Request request) throws InterruptedException {
 
         try {
-            return UseBalance.Response.from(transactionService.useBalance(
+            Thread.sleep(3000L); // 동시성 제어를 위해서 일부러 넣어준 코드
+
+            return UseBalance.Response.from(
+                    transactionService.useBalance(
                     request.getUserId(), request.getAccountNumber(), request.getAmount()));
         } catch (AccountException e) {
             log.error("Failed to use balance");
+
             transactionService.saveFailedUseTransaction(
                     request.getAccountNumber(),
                     request.getAmount()
@@ -44,6 +50,7 @@ public class TransactionController {
     }
 
     @PostMapping("/transaction/cancel")
+    @AccountLock
     public CancelBalance.Response cancleBalance(
             @Valid @RequestBody CancelBalance.Request request) {
 

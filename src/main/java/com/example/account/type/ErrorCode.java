@@ -18,7 +18,9 @@ public enum ErrorCode {
     USER_MAX_COUNT_PER_USER_10("사용자 최대 계좌는 10개입니다."),
 
     TOO_OLD_ORDER_TO_CANCEL("1년이 지난 거래는 취소가 불가능합니다."),
-    INVALID_REQUEST("잘못된 요청입니다.");
+    INVALID_REQUEST("잘못된 요청입니다."),
+    INTERNAL_SERVER_ERROR("내부 서버 오류가 발생했습니다."),
+    ACCOUNT_TRANSACTION_LOCK("해당 계좌는 사용중입니다.");
     private final String description;
 
 }

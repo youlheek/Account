@@ -1,5 +1,5 @@
 ### get account
-GET http://localhost:8080/account?user_id=1
+GET http://localhost:8080/account?user_id=4
 Content-Type: application/json
 
 
