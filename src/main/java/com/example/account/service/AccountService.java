@@ -40,9 +40,7 @@ public class AccountService {
     @Transactional
     public AccountDto createAccount(Long userId, Long initialBalance) {
 
-        AccountUser accountUser
-                = accountUserRepository.findById(userId)
-                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+        AccountUser accountUser = getAccountUser(userId);
 
         validateCreateAccount(accountUser);
 
@@ -81,14 +79,18 @@ public class AccountService {
         return accountRepository.findById(id).get();
     }
 
-
+/*
+* 1. 사용자 또는 계좌가 없는 경우,
+* 2. 사용자 아이디와 계좌 소유주가 다른 경우,
+* 3. 계좌가 이미 해지 상태인 경우,
+* 4.잔액이 있는 경우
+➡️실패 응답
+* */
     @Transactional
     public AccountDto deleteAccount(
             @NotNull @Min(1) Long userId, @NotBlank @Size(min = 10, max = 10) String accountNumber) {
 
-        AccountUser accountUser
-                = accountUserRepository.findById(userId)
-                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+        AccountUser accountUser = getAccountUser(userId);
         Account account
                 = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountException(ACCOUNT_NOT_FOUND));
@@ -118,9 +120,7 @@ public class AccountService {
 
     @Transactional // 이게 없으면 레이지로딩이 안되어서 제대로 로드가 안됨
     public List<AccountDto> getAccountByUserId(Long userId) {
-        AccountUser accountUser
-                = accountUserRepository.findById(userId)
-                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+        AccountUser accountUser = getAccountUser(userId);
 
         List<Account> accounts = accountRepository.findByAccountUser(accountUser);
 
@@ -129,5 +129,18 @@ public class AccountService {
                 .map(AccountDto::fromEntity)
                 // 위 코드 대신 .map(account -> AccountDto.fromEntity(account)) 도 가능
                 .collect(Collectors.toList());
+        /**
+         **Collectors.toList()**는 마치 "상자에 물건을 담아라"라는 명령이 적혀 있는 설명서와 같아요.
+         **collect()**는 그 설명서를 읽고 실제로 물건을 담는 작업을 수행하는 단계입니다.
+         Collectors.toList()가 리스트에 담으라는 규칙을 제공하고, collect() 메서드는 이 규칙에 맞춰 스트림의 요소들을 리스트로 모으는 거예요.
+         그래서, Collectors.toList() 자체는 실제로 데이터를 모으는 일을 하지 않아요. 대신 리스트로 모으는 규칙을 정의하고, collect()가 이 규칙을 사용해 결과를 리스트로 만드는 거죠.*/
+    }
+
+    // 🛠️리팩토링 1 : 반복되는 AccountUser 객체 생성 코드를 메서드로 만들어버리기
+    private AccountUser getAccountUser(Long userId) {
+        AccountUser accountUser
+                = accountUserRepository.findById(userId)
+                .orElseThrow(() -> new AccountException(USER_NOT_FOUND));
+        return accountUser;
     }
 }

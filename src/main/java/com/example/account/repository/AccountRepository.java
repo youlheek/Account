@@ -13,6 +13,8 @@ import java.util.Optional;
                                                     // < PK, 엔티티의 primary 타입>
 public interface AccountRepository extends JpaRepository<Account, Long> {
 
+    // 📍 실제 구현은 어디에 있나요..?
+    // 인프런 김영한 강의 - JPA 강의 듣기
     Optional<Account> findFirstByOrderByIdDesc();
 
     Optional<Account> findByAccountNumber(String AccountNumber);

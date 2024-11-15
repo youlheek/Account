@@ -1,9 +1,9 @@
 package com.example.account.domain;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,20 +12,20 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+// 🛠️ 리팩토링 2 : Entity들의 공통 속성을 BaseEntity로 만들어버리기
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
 @SuperBuilder
-@Entity
-//@EntityListeners(AuditingEntityListener.class)
-public class AccountUser extends BaseEntity { // User라고 붙이지 않은 이유 : 시스템 상 User 테이블이 존재하기 때문
-//    @Id
-//    @GeneratedValue
-//    private Long id;
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public class BaseEntity {
 
-    private String name;
+    @Id
+    @GeneratedValue
+    Long id;
 
-//    @CreatedDate
-//    private LocalDateTime createdAt;
-//    @LastModifiedDate
-//    private LocalDateTime updatedAt;
+    @CreatedDate
+    private LocalDateTime createdAt;
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

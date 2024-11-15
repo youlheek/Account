@@ -13,7 +13,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class LockService {
+public class LockService { // 실제로 락을 걸고 해제하는 로직을 담당 -> LockAopAspect에서 사용됨
+    // 그리고 LockAopAspect는 AOP를 통해 특정 메서드에 자동으로 락을 적용하는 역할을 함
+
     private final RedissonClient redissonClient;
     // RedisRepositoryConfig 클래스에 등록된 Bean 이름과 같으면 자동으로 매칭됨
     // redissonClient()
